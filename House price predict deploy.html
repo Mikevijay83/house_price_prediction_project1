@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AuraEstate Predictor - Premium real-time house price estimation powered by a Linear Regression machine learning model.">
+  <title>AuraEstate - Machine Learning House Price Predictor</title>
+  
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* CSS Variables for design system */
+    :root {
+      --bg-dark: #09090e;
+      --bg-card: rgba(22, 22, 33, 0.45);
+      --bg-card-hover: rgba(28, 28, 43, 0.6);
+      --border-glass: rgba(255, 255, 255, 0.08);
+      --border-glass-active: rgba(139, 92, 246, 0.4);
+      --primary: #8b5cf6;
+      --primary-glow: rgba(139, 92, 246, 0.25);
+      --primary-light: #a78bfa;
+      --secondary: #ec4899;
+      --secondary-glow: rgba(236, 72, 153, 0.25);
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --success: #10b981;
+      --danger: #ef4444;
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100:vh;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.12) 0%, transparent 40%);
+      background-attachment: fixed;
+    }
+
+    /* Core container */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+    }
+
+    /* Header styling */
+    header {
+      text-align: center;
+      margin-bottom: 3.5rem;
+      position: relative;
+    }
+
+    header h1 {
+      font-family: var(--font-display);
+      font-size: 3.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 30%, var(--primary-light) 70%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.03em;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.15rem;
+      font-weight: 400;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Main layout grid */
+    .app-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 2.5rem;
+      align-items: start;
+    }
+
+    /* Glassmorphic Panel Base */
+    .glass-panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-glass);
+      border-radius: 24px;
+      padding: 2.5rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .glass-panel:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    /* Section Title */
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 0.75rem;
+    }
+
+    .section-title svg {
+      color: var(--primary);
+    }
+
+    /* Form Fields Grid */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.75rem;
+    }
+
+    .full-width {
+      grid-column: span 2;
+    }
+
+    /* Input Labels */
+    .field-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .label-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    /* Sliders and Numerical inputs wrapper */
+    .slider-container {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 16px;
+      padding: 1.25rem;
+      margin-top: 0.25rem;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .slider-val-input {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 700;
+      text-align: right;
+      padding: 0.35rem 0.75rem;
+      width: 100px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .slider-val-input:focus {
+      border-color: var(--primary);
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: transparent;
+    }
+
+    input[type=range]:focus {
+      outline: none;
+    }
+
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 6px;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      height: 20px;
+      width: 20px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+      -webkit-appearance: none;
+      margin-top: -7px;
+      box-shadow: 0 0 10px var(--primary-glow);
+      transition: transform 0.1s, background-color 0.2s;
+    }
+
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+      background: var(--primary-light);
+    }
+
+    /* Segmented Selection Controllers */
+    .segmented-control {
+      display: flex;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 0.25rem;
+      gap: 0.25rem;
+    }
+
+    .segmented-control button {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-weight: 500;
+      padding: 0.6rem 0.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: var(--font-body);
+    }
+
+    .segmented-control button:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .segmented-control button.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+    }
+
+    /* Premium toggles style */
+    .toggles-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+
+    .toggle-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 1.1rem 1.25rem;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .toggle-card:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .toggle-card.active {
+      background: rgba(139, 92, 246, 0.06);
+      border-color: var(--border-glass-active);
+    }
+
+    .toggle-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .toggle-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .toggle-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* iOS switch styling */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      pointer-events: none; /* Make click trigger container */
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider-switch {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.1);
+      transition: .3s;
+      border-radius: 24px;
+    }
+
+    .slider-switch:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #fff;
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider-switch {
+      background-color: var(--primary);
+    }
+
+    input:checked + .slider-switch:before {
+      transform: translateX(20px);
+    }
+
+    /* Output Section */
+    .sticky-card {
+      position: sticky;
+      top: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    /* Big Price Output Display */
+    .price-card {
+      background: linear-gradient(135deg, rgba(26, 21, 46, 0.8) 0%, rgba(13, 11, 26, 0.9) 100%);
+      border: 1px solid var(--border-glass-active);
+      box-shadow: 0 25px 50px rgba(139, 92, 246, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .price-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+    }
+
+    .currency-switch-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .currency-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Price counter output */
+    .price-value-container {
+      margin-bottom: 1.5rem;
+    }
+
+    .price-value {
+      font-family: var(--font-display);
+      font-size: 3.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #fff;
+      text-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+      transition: color 0.3s;
+    }
+
+    .price-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Accuracy indicator */
+    .accuracy-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      color: var(--success);
+      padding: 0.35rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    /* Feature Contribution list */
+    .contribution-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 0.5rem;
+    }
+
+    .contribution-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      max-height: 250px;
+      overflow-y: auto;
+      padding-right: 0.25rem;
+    }
+
+    .contribution-list::-webkit-scrollbar {
+      width: 4px;
+    }
+    .contribution-list::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+    }
+
+    .contribution-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      padding: 0.4rem 0.5rem;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    .contrib-label {
+      color: var(--text-muted);
+    }
+
+    .contrib-value {
+      font-weight: 600;
+      font-family: var(--font-display);
+    }
+
+    .contrib-pos {
+      color: var(--success);
+    }
+
+    .contrib-neg {
+      color: var(--danger);
+    }
+
+    /* Charts dashboard section */
+    .insights-section {
+      margin-top: 4rem;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 2.5rem;
+    }
+
+    .chart-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      border-radius: 24px;
+      padding: 2rem;
+      min-height: 380px;
+    }
+
+    .chart-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .chart-header h3 {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .chart-header p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    /* Responsive media queries */
+    @media (max-width: 1024px) {
+      .app-grid {
+        grid-template-columns: 1fr;
+      }
+      .sticky-card {
+        position: static;
+      }
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .full-width {
+        grid-column: span 1;
+      }
+      header h1 {
+        font-size: 2.2rem;
+      }
+      .toggles-grid {
+        grid-template-columns: 1fr;
+      }
+      .price-value {
+        font-size: 2.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Top Header -->
+    <header>
+      <h1>AuraEstate Predictor</h1>
+      <p>Premium Real-Time Valuation of Delhi Residential Real Estate using an Optimized Multiple Linear Regression Model</p>
+    </header>
+
+    <!-- App Main Grid -->
+    <div class="app-grid">
+      
+      <!-- Input Controls Panel -->
+      <section class="glass-panel">
+        <h2 class="section-title">
+          <!-- House Icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Property Specifications
+        </h2>
+        
+        <form id="predictorForm" onsubmit="event.preventDefault();">
+          <div class="form-grid">
+            
+            <!-- Area Slider -->
+            <div class="full-width">
+              <div class="field-label">
+                <span>Plot Area</span>
+                <span class="label-desc">Total lot size in square feet</span>
+              </div>
+              <div class="slider-container">
+                <div class="slider-header">
+                  <span style="font-size: 0.8rem; color: var(--text-muted);">Range: 1,000 - 16,000 sq ft</span>
+                  <input type="text" id="areaInputVal" class="slider-val-input" value="5150">
+                </div>
+                <input type="range" id="areaSlider" min="1000" max="16000" value="5150">
+              </div>
+            </div>
+
+            <!-- Bedrooms selection -->
+            <div>
+              <label class="field-label">Bedrooms</label>
+              <div class="segmented-control" id="bedroomsControl">
+                <button type="button" class="active" data-val="1">1</button>
+                <button type="button" data-val="2">2</button>
+                <button type="button" data-val="3">3</button>
+                <button type="button" data-val="4">4</button>
+                <button type="button" data-val="5">5</button>
+                <button type="button" data-val="6">6</button>
+              </div>
+            </div>
+
+            <!-- Bathrooms selection -->
+            <div>
+              <label class="field-label">Bathrooms</label>
+              <div class="segmented-control" id="bathroomsControl">
+                <button type="button" class="active" data-val="1">1</button>
+                <button type="button" data-val="2">2</button>
+                <button type="button" data-val="3">3</button>
+                <button type="button" data-val="4">4</button>
+              </div>
+            </div>
+
+            <!-- Stories selection -->
+            <div>
+              <label class="field-label">Stories / Floors</label>
+              <div class="segmented-control" id="storiesControl">
+                <button type="button" class="active" data-val="1">1</button>
+                <button type="button" data-val="2">2</button>
+                <button type="button" data-val="3">3</button>
+                <button type="button" data-val="4">4</button>
+              </div>
+            </div>
+
+            <!-- Parking spaces selection -->
+            <div>
+              <label class="field-label">Parking Spaces</label>
+              <div class="segmented-control" id="parkingControl">
+                <button type="button" class="active" data-val="0">0</button>
+                <button type="button" data-val="1">1</button>
+                <button type="button" data-val="2">2</button>
+                <button type="button" data-val="3">3</button>
+              </div>
+            </div>
+
+            <!-- Furnishing status -->
+            <div class="full-width">
+              <label class="field-label">Furnishing Status</label>
+              <div class="segmented-control" id="furnishingControl">
+                <button type="button" class="active" data-val="1">Furnished</button>
+                <button type="button" data-val="2">Semi-Furnished</button>
+                <button type="button" data-val="3">Unfurnished</button>
+              </div>
+            </div>
+
+            <!-- Amenities Switches -->
+            <div class="full-width">
+              <label class="field-label" style="margin-top: 0.5rem; margin-bottom: 1.25rem;">Amenities & Features</label>
+              <div class="toggles-grid">
+                
+                <!-- Main Road -->
+                <div class="toggle-card" onclick="toggleSwitch('mainroadChecked')">
+                  <div class="toggle-info">
+                    <span class="toggle-title">Main Road access</span>
+                    <span class="toggle-desc">Located on main transit road</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="mainroadChecked">
+                    <span class="slider-switch"></span>
+                  </label>
+                </div>
+
+                <!-- Guestroom -->
+                <div class="toggle-card" onclick="toggleSwitch('guestroomChecked')">
+                  <div class="toggle-info">
+                    <span class="toggle-title">Guest Room</span>
+                    <span class="toggle-desc">Separate guest room layout</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="guestroomChecked">
+                    <span class="slider-switch"></span>
+                  </label>
+                </div>
+
+                <!-- Basement -->
+                <div class="toggle-card" onclick="toggleSwitch('basementChecked')">
+                  <div class="toggle-info">
+                    <span class="toggle-title">Finished Basement</span>
+                    <span class="toggle-desc">Extra basement level space</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="basementChecked">
+                    <span class="slider-switch"></span>
+                  </label>
+                </div>
+
+                <!-- Hot Water Heating -->
+                <div class="toggle-card" onclick="toggleSwitch('hotwaterChecked')">
+                  <div class="toggle-info">
+                    <span class="toggle-title">Water Heating System</span>
+                    <span class="toggle-desc">Dedicated hot water central heating</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="hotwaterChecked">
+                    <span class="slider-switch"></span>
+                  </label>
+                </div>
+
+                <!-- Air Conditioning -->
+                <div class="toggle-card" onclick="toggleSwitch('acChecked')">
+                  <div class="toggle-info">
+                    <span class="toggle-title">Air Conditioning</span>
+                    <span class="toggle-desc">Centralized air conditioning systems</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="acChecked">
+                    <span class="slider-switch"></span>
+                  </label>
+                </div>
+
+                <!-- Preferred Area -->
+                <div class="toggle-card" onclick="toggleSwitch('prefChecked')">
+                  <div class="toggle-info">
+                    <span class="toggle-title">Preferred Neighborhood</span>
+                    <span class="toggle-desc">Located in high-demand zone</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="prefChecked">
+                    <span class="slider-switch"></span>
+                  </label>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </form>
+      </section>
+      
+      <!-- Prediction Sticky Card -->
+      <aside class="sticky-card">
+        
+        <!-- Main Price Card -->
+        <div class="glass-panel price-card">
+          <div class="currency-switch-wrapper">
+            <span class="currency-label">Estimated Value</span>
+            
+            <!-- Currency selector button group -->
+            <div class="segmented-control" id="currencyControl" style="max-width: 130px; padding: 0.15rem;">
+              <button type="button" class="active" style="padding: 0.35rem; font-size: 0.8rem;" data-currency="INR">INR (₹)</button>
+              <button type="button" style="padding: 0.35rem; font-size: 0.8rem;" data-currency="USD">USD ($)</button>
+            </div>
+          </div>
+          
+          <div class="price-value-container">
+            <div class="price-value" id="priceDisplay">₹4,766,729</div>
+            <div class="price-subtitle" style="margin-top: 0.5rem;">
+              <span class="accuracy-pill">
+                <!-- Check Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Model Accuracy R²: 67.1%
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contribution Breakdown List -->
+        <div class="glass-panel">
+          <h3 class="contribution-title">
+            <!-- Details Icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            Valuation Breakdown
+          </h3>
+          <div class="contribution-list" id="contributionList">
+            <!-- Populated via Javascript -->
+          </div>
+        </div>
+
+      </aside>
+
+    </div>
+
+    <!-- Insights Analytics Dashboard Section -->
+    <section class="insights-section">
+      <h2 class="section-title" style="margin-bottom: 2.5rem;">
+        <!-- Analytics Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Dataset Analytics & Insights
+      </h2>
+      
+      <div class="charts-grid">
+        
+        <!-- Area vs Price Correlation -->
+        <div class="chart-container">
+          <div class="chart-header">
+            <h3>Area vs. Price Trend</h3>
+            <p>Visualizing lot size (sq ft) compared to predicted prices with all other features set to baseline averages.</p>
+          </div>
+          <div style="width: 100%; height: 280px; position: relative;">
+            <canvas id="areaPriceChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Model Coefficients / Feature Weights -->
+        <div class="chart-container">
+          <div class="chart-header">
+            <h3>Feature Importance Weights</h3>
+            <p>Relative impact (coefficients) of each amenity and variable on the house value prediction model.</p>
+          </div>
+          <div style="width: 100%; height: 280px; position: relative;">
+            <canvas id="featureImportanceChart"></canvas>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    // Exchange rate: 1 USD = 83.5 INR
+    const USD_EXCHANGE_RATE = 83.5;
+
+    // Linear Regression parameters extracted from training script
+    const AREA_MEAN = 5150.541284;
+    const AREA_STD = 2168.149153;
+    const PRICE_MEAN = 4766729.247706;
+    const PRICE_STD = 1868722.828131;
+    const INTERCEPT = -1.788288;
+    
+    const COEFFICIENTS = {
+      area: 0.309943,
+      bedrooms: 0.072782,
+      bathrooms: 0.519779,
+      stories: 0.267700,
+      mainroad: 0.238523,
+      guestroom: 0.124524,
+      basement: 0.224720,
+      hotwaterheating: 0.504195,
+      airconditioning: 0.403880,
+      parking: 0.155591,
+      prefarea: 0.294511,
+      furnishingstatus: -0.100040
+    };
+
+    // State Variables
+    let selectedCurrency = 'INR';
+    let currentInputs = {
+      area: 5150,
+      bedrooms: 3,
+      bathrooms: 1,
+      stories: 2,
+      parking: 1,
+      furnishingstatus: 2, // Semi-furnished (baseline average)
+      mainroad: 1,
+      guestroom: 0,
+      basement: 0,
+      hotwaterheating: 0,
+      airconditioning: 0,
+      prefarea: 0
+    };
+
+    // DOM Elements
+    const areaSlider = document.getElementById('areaSlider');
+    const areaInputVal = document.getElementById('areaInputVal');
+    const priceDisplay = document.getElementById('priceDisplay');
+    const contributionList = document.getElementById('contributionList');
+
+    // Init charts references
+    let areaPriceChart = null;
+    let featureImportanceChart = null;
+
+    // On Load Setup
+    window.addEventListener('DOMContentLoaded', () => {
+      initSegmentedControls();
+      initSliderControls();
+      initCurrencyControl();
+      calculatePrediction();
+      initAnalyticsCharts();
+    });
+
+    // Setup segmented buttons click handlers
+    function initSegmentedControls() {
+      // Setup click handlers for segmented button controls
+      setupSegmentGroup('bedroomsControl', 'bedrooms');
+      setupSegmentGroup('bathroomsControl', 'bathrooms');
+      setupSegmentGroup('storiesControl', 'stories');
+      setupSegmentGroup('parkingControl', 'parking');
+      setupSegmentGroup('furnishingControl', 'furnishingstatus');
+    }
+
+    function setupSegmentGroup(containerId, stateKey) {
+      const container = document.getElementById(containerId);
+      const buttons = container.querySelectorAll('button');
+      
+      // Select baseline button matching current state
+      buttons.forEach(btn => {
+        const val = parseInt(btn.getAttribute('data-val'));
+        if (val === currentInputs[stateKey]) {
+          buttons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        }
+
+        btn.addEventListener('click', () => {
+          buttons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentInputs[stateKey] = val;
+          calculatePrediction();
+        });
+      });
+    }
+
+    // Toggle card switch handler
+    function toggleSwitch(checkboxId) {
+      const checkbox = document.getElementById(checkboxId);
+      const card = checkbox.closest('.toggle-card');
+      checkbox.checked = !checkbox.checked;
+      
+      if (checkbox.checked) {
+        card.classList.add('active');
+      } else {
+        card.classList.remove('active');
+      }
+
+      // Map check to state keys
+      const mapping = {
+        'mainroadChecked': 'mainroad',
+        'guestroomChecked': 'guestroom',
+        'basementChecked': 'basement',
+        'hotwaterChecked': 'hotwaterheating',
+        'acChecked': 'airconditioning',
+        'prefChecked': 'prefarea'
+      };
+
+      currentInputs[mapping[checkboxId]] = checkbox.checked ? 1 : 0;
+      calculatePrediction();
+    }
+
+    // Bidirectional Slider + Text input controls
+    function initSliderControls() {
+      // Sync slider to text input
+      areaSlider.addEventListener('input', (e) => {
+        let val = parseInt(e.target.value);
+        areaInputVal.value = val;
+        currentInputs.area = val;
+        calculatePrediction();
+      });
+
+      // Sync text input back to slider (on type)
+      areaInputVal.addEventListener('change', (e) => {
+        let val = parseInt(e.target.value);
+        if (isNaN(val)) val = 5000;
+        if (val < 1000) val = 1000;
+        if (val > 16000) val = 16000;
+        
+        areaInputVal.value = val;
+        areaSlider.value = val;
+        currentInputs.area = val;
+        calculatePrediction();
+      });
+    }
+
+    // Currency Switcher
+    function initCurrencyControl() {
+      const wrapper = document.getElementById('currencyControl');
+      const buttons = wrapper.querySelectorAll('button');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          buttons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          selectedCurrency = btn.getAttribute('data-currency');
+          calculatePrediction();
+          updateChartsCurrency();
+        });
+      });
+    }
+
+    // Prediction Core Calculation Math
+    function calculatePrediction() {
+      // 1. Scale Area
+      const scaledArea = (currentInputs.area - AREA_MEAN) / AREA_STD;
+
+      // 2. Linear Regression Formula
+      // Base Intercept
+      let scaledPricePrediction = INTERCEPT;
+
+      // Add feature contributions
+      scaledPricePrediction += scaledArea * COEFFICIENTS.area;
+      scaledPricePrediction += currentInputs.bedrooms * COEFFICIENTS.bedrooms;
+      scaledPricePrediction += currentInputs.bathrooms * COEFFICIENTS.bathrooms;
+      scaledPricePrediction += currentInputs.stories * COEFFICIENTS.stories;
+      scaledPricePrediction += currentInputs.parking * COEFFICIENTS.parking;
+      scaledPricePrediction += currentInputs.furnishingstatus * COEFFICIENTS.furnishingstatus;
+      
+      scaledPricePrediction += currentInputs.mainroad * COEFFICIENTS.mainroad;
+      scaledPricePrediction += currentInputs.guestroom * COEFFICIENTS.guestroom;
+      scaledPricePrediction += currentInputs.basement * COEFFICIENTS.basement;
+      scaledPricePrediction += currentInputs.hotwaterheating * COEFFICIENTS.hotwaterheating;
+      scaledPricePrediction += currentInputs.airconditioning * COEFFICIENTS.airconditioning;
+      scaledPricePrediction += currentInputs.prefarea * COEFFICIENTS.prefarea;
+
+      // 3. Inverse scale the price
+      const rawPricePrediction = (scaledPricePrediction * PRICE_STD) + PRICE_MEAN;
+      
+      // Ensure price is realistic (floor at 500,000 INR)
+      const finalPrice = Math.max(500000, rawPricePrediction);
+
+      // 4. Update UI Display
+      animatePrice(finalPrice);
+
+      // 5. Update breakdown details list
+      updateBreakdown(scaledArea);
+    }
+
+    // Smooth price animation counter
+    let currentDisplayedPrice = 4766729;
+    let animationFrameId = null;
+
+    function animatePrice(targetPrice) {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+
+      const duration = 400; // ms
+      const startTime = performance.now();
+      const startPrice = currentDisplayedPrice;
+
+      function step(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Easing function (easeOutQuad)
+        const ease = progress * (2 - progress);
+        
+        currentDisplayedPrice = startPrice + (targetPrice - startPrice) * ease;
+        displayPriceText(currentDisplayedPrice);
+
+        if (progress < 1) {
+          animationFrameId = requestAnimationFrame(step);
+        } else {
+          currentDisplayedPrice = targetPrice;
+          displayPriceText(targetPrice);
+        }
+      }
+
+      animationFrameId = requestAnimationFrame(step);
+    }
+
+    function displayPriceText(price) {
+      if (selectedCurrency === 'USD') {
+        const usdPrice = price / USD_EXCHANGE_RATE;
+        priceDisplay.textContent = new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          maximumFractionDigits: 0
+        }).format(usdPrice);
+      } else {
+        priceDisplay.textContent = new Intl.NumberFormat('en-IN', {
+          style: 'currency',
+          currency: 'INR',
+          maximumFractionDigits: 0
+        }).format(price);
+      }
+    }
+
+    // Update the visual Breakdown breakdown list
+    function updateBreakdown(scaledArea) {
+      contributionList.innerHTML = '';
+
+      // Base Base Value
+      addBreakdownItem("Base Base Intercept", (INTERCEPT * PRICE_STD) + PRICE_MEAN, false);
+
+      // Area impact
+      const areaImpact = (scaledArea * COEFFICIENTS.area) * PRICE_STD;
+      addBreakdownItem("Area Lot Size Impact", areaImpact, true);
+
+      // Bedrooms
+      const bedImpact = (currentInputs.bedrooms * COEFFICIENTS.bedrooms) * PRICE_STD;
+      addBreakdownItem(`${currentInputs.bedrooms} Bedrooms`, bedImpact, true);
+
+      // Bathrooms
+      const bathImpact = (currentInputs.bathrooms * COEFFICIENTS.bathrooms) * PRICE_STD;
+      addBreakdownItem(`${currentInputs.bathrooms} Bathrooms`, bathImpact, true);
+
+      // Stories
+      const storiesImpact = (currentInputs.stories * COEFFICIENTS.stories) * PRICE_STD;
+      addBreakdownItem(`${currentInputs.stories} Stories`, storiesImpact, true);
+
+      // Parking
+      const parkingImpact = (currentInputs.parking * COEFFICIENTS.parking) * PRICE_STD;
+      addBreakdownItem(`${currentInputs.parking} Parking Spaces`, parkingImpact, true);
+
+      // Furnishing status
+      const furnishingNames = {1: 'Furnished', 2: 'Semi-Furnished', 3: 'Unfurnished'};
+      const furnishImpact = (currentInputs.furnishingstatus * COEFFICIENTS.furnishingstatus) * PRICE_STD;
+      addBreakdownItem(`${furnishingNames[currentInputs.furnishingstatus]} Status`, furnishImpact, true);
+
+      // Amenities
+      if (currentInputs.mainroad) addBreakdownItem("Main Road Access", COEFFICIENTS.mainroad * PRICE_STD, true);
+      if (currentInputs.guestroom) addBreakdownItem("Guest Room Addition", COEFFICIENTS.guestroom * PRICE_STD, true);
+      if (currentInputs.basement) addBreakdownItem("Finished Basement", COEFFICIENTS.basement * PRICE_STD, true);
+      if (currentInputs.hotwaterheating) addBreakdownItem("Hot Water Heating System", COEFFICIENTS.hotwaterheating * PRICE_STD, true);
+      if (currentInputs.airconditioning) addBreakdownItem("Air Conditioning", COEFFICIENTS.airconditioning * PRICE_STD, true);
+      if (currentInputs.prefarea) addBreakdownItem("Preferred Area Status", COEFFICIENTS.prefarea * PRICE_STD, true);
+    }
+
+    function addBreakdownItem(label, rawValue, showSign) {
+      let formattedVal = "";
+      const isPositive = rawValue >= 0;
+      
+      const absValue = Math.abs(rawValue);
+      let valToFormat = absValue;
+      if (selectedCurrency === 'USD') {
+        valToFormat = absValue / USD_EXCHANGE_RATE;
+      }
+
+      const currencyStr = new Intl.NumberFormat(selectedCurrency === 'USD' ? 'en-US' : 'en-IN', {
+        style: 'currency',
+        currency: selectedCurrency,
+        maximumFractionDigits: 0
+      }).format(valToFormat);
+
+      if (showSign) {
+        formattedVal = (isPositive ? "+ " : "- ") + currencyStr;
+      } else {
+        formattedVal = currencyStr;
+      }
+
+      const div = document.createElement('div');
+      div.className = 'contribution-item';
+      
+      const classAttr = showSign ? (isPositive ? 'contrib-value contrib-pos' : 'contrib-value contrib-neg') : 'contrib-value';
+
+      div.innerHTML = `
+        <span class="contrib-label">${label}</span>
+        <span class="${classAttr}">${formattedVal}</span>
+      `;
+      contributionList.appendChild(div);
+    }
+
+    // Chart.js Configuration & Rendering
+    function initAnalyticsCharts() {
+      // 1. Area vs Price Line Chart
+      const areaCtx = document.getElementById('areaPriceChart').getContext('2d');
+      const areaPoints = [];
+      const areaLabels = [];
+      
+      // Calculate prediction across 10 areas keeping other inputs baseline (average specs)
+      for (let testArea = 1000; testArea <= 16000; testArea += 1500) {
+        const scaledArea = (testArea - AREA_MEAN) / AREA_STD;
+        let scaledPrice = INTERCEPT;
+        scaledPrice += scaledArea * COEFFICIENTS.area;
+        scaledPrice += 3 * COEFFICIENTS.bedrooms;     // Average bedrooms
+        scaledPrice += 1 * COEFFICIENTS.bathrooms;    // Average bathrooms
+        scaledPrice += 2 * COEFFICIENTS.stories;      // Average stories
+        scaledPrice += 1 * COEFFICIENTS.parking;      // Average parking
+        scaledPrice += 2 * COEFFICIENTS.furnishingstatus; // Semi-furnished (average)
+        scaledPrice += 1 * COEFFICIENTS.mainroad;
+        
+        let finalPrice = (scaledPrice * PRICE_STD) + PRICE_MEAN;
+        areaPoints.push(Math.max(500000, finalPrice));
+        areaLabels.push(testArea.toLocaleString() + " sf");
+      }
+
+      areaPriceChart = new Chart(areaCtx, {
+        type: 'line',
+        data: {
+          labels: areaLabels,
+          datasets: [{
+            label: 'Predicted House Price',
+            data: areaPoints,
+            borderColor: '#8b5cf6',
+            backgroundColor: 'rgba(139, 92, 246, 0.15)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#ec4899',
+            pointBorderColor: '#fff',
+            pointHoverRadius: 7
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#9ca3af' }
+            },
+            y: {
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: {
+                color: '#9ca3af',
+                callback: function(value) {
+                  return formatChartValue(value);
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // 2. Feature Importance Bar Chart
+      const featureCtx = document.getElementById('featureImportanceChart').getContext('2d');
+      // Values in currency impact (std weight)
+      const featureWeights = [
+        COEFFICIENTS.area * PRICE_STD,
+        COEFFICIENTS.bathrooms * PRICE_STD,
+        COEFFICIENTS.stories * PRICE_STD,
+        COEFFICIENTS.airconditioning * PRICE_STD,
+        COEFFICIENTS.prefarea * PRICE_STD,
+        COEFFICIENTS.basement * PRICE_STD,
+        COEFFICIENTS.parking * PRICE_STD
+      ];
+
+      featureImportanceChart = new Chart(featureCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Area', 'Bathrooms', 'Stories', 'Air Conditioning', 'Preferred Area', 'Basement', 'Parking Space'],
+          datasets: [{
+            label: 'Weight (INR/USD impact)',
+            data: featureWeights,
+            backgroundColor: [
+              'rgba(139, 92, 246, 0.7)',
+              'rgba(236, 72, 153, 0.7)',
+              'rgba(59, 130, 246, 0.7)',
+              'rgba(16, 185, 129, 0.7)',
+              'rgba(245, 158, 11, 0.7)',
+              'rgba(99, 102, 241, 0.7)',
+              'rgba(14, 165, 233, 0.7)'
+            ],
+            borderColor: 'rgba(255,255,255,0.1)',
+            borderWidth: 1,
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: '#9ca3af', font: { size: 9 } }
+            },
+            y: {
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: {
+                color: '#9ca3af',
+                callback: function(value) {
+                  return formatChartValue(value);
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Helper to format currency labels on chart axes
+    function formatChartValue(val) {
+      let finalVal = val;
+      if (selectedCurrency === 'USD') {
+        finalVal = val / USD_EXCHANGE_RATE;
+      }
+      
+      if (finalVal >= 1000000) {
+        return (selectedCurrency === 'USD' ? '$' : '₹') + (finalVal / 1000000).toFixed(1) + 'M';
+      }
+      if (finalVal >= 1000) {
+        return (selectedCurrency === 'USD' ? '$' : '₹') + (finalVal / 1000).toFixed(0) + 'K';
+      }
+      return (selectedCurrency === 'USD' ? '$' : '₹') + finalVal;
+    }
+
+    // Update chart currency display on toggle
+    function updateChartsCurrency() {
+      // Re-render chart ticks using the updated currency callback
+      areaPriceChart.update();
+      featureImportanceChart.update();
+    }
+  </script>
+</body>
+</html>

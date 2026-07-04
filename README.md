@@ -1,10 +1,3 @@
-Developed a machine learning model to predict house prices based on various property features.
-Collected and preprocessed housing data by handling missing values and removing inconsistencies.
-Performed Exploratory Data Analysis (EDA) to identify trends and relationships between features.
-Applied feature engineering and data preprocessing techniques to improve model performance.
-Trained and evaluated multiple machine learning algorithms to identify the best-performing model.
-Used Python, Pandas, NumPy, and Scikit-learn for data processing and model development.
-Split the dataset into training and testing sets to validate the model's predictive performance.
-Measured model performance using evaluation metrics such as R² Score, Mean Absolute Error (MAE), and Root Mean Squared Error (RMSE).
-Generated accurate house price predictions based on user-provided property details.
-Built a reliable predictive solution to support data-driven decision-making in the real estate market.﻿
+📖 Project Description
+
+The House Price Prediction project is a Machine Learning application developed using Python to predict residential property prices based on various features such as location, area, number of bedrooms, bathrooms, and other housing attributes. The project involves data preprocessing, exploratory data analysis (EDA), feature engineering, model training, and performance evaluation to build an accurate predictive model. Multiple machine learning algorithms are applied and compared to identify the best-performing model for price prediction. This project demonstrates the complete machine learning workflow, from data cleaning and visualization to model development, evaluation, and prediction, providing valuable insights into factors that influence house prices.
